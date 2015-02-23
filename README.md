@@ -2,12 +2,12 @@
 Data Poor Stock Assessment Methods
 
 ## Table of contents
-- [Structured Workplan & Timeline](#structured-workplan-&-timeline)
+- [Structured Workplan & Timeline](#structured-workplan)
 
 
 
 
-## Structured Workplan & Timeline
+## Structured Workplan
 **January 2015** Deliverable: Structured Workplan
 - [x] Set up code repository for DPSAM on github.
 - [x] Coordinate meeting with WPFMC staff (re: identify data sources & collaborators)
