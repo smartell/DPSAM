@@ -2,7 +2,7 @@
 #' @name dpsam package
 #' @docType package
 #' @author STEVEN MARTELL
-
+library(tools)
 library(roxygen2)
 
 # STOCK CLASS
@@ -25,9 +25,13 @@ stock$m  	<- 0.20
 stock$fmsy 	<- 0.12
 stock$msy 	<- 1.00
 
-# class(stock) = "dpsam"
+# class(stock) = "stock"
 
-
+# MODEL_DATA CLASS
+dfile <- "NamibianHake.dat"
+data <- read.table(dfile,header=TRUE)
+save(data,file=paste0(file_path_sans_ext(dfile),".Rd"))
+# class(data) = "model_data"
 
 
 calcAgeSchedules <- function(stock)
@@ -88,7 +92,34 @@ calcSteepnessBo <- function(stock)
 	})
 }
 
+ageStructuredModel <- function(stock,data)
+{
+	stock <- c(as.list(stock),as.list(data))
+	with(stock,{
+		so   <- reck/phie
+		beta <- (reck-1.0)/(bo)
+		N    <- matrix(nrow=length(year)+1,ncol=length(age))
+		N[1,]<- ro*lx
+		apo  <- age[-min(age)]
+		amo  <- age[-max(age)]
+		nage <- max(age)
+		for (i in 1:length(year)) 
+		{
+			st         <- exp(-m-0*fmsy*va)
+			ssb        <- sum(N[i,]*fa)
+			N[i+1,1]   <- so*ssb/(1+beta*ssb)
+			N[i+1,apo] <- N[i,amo] * st[amo]
+			N[i+1,nage]<- N[i+1,nage]+N[i,nage] * st[nage]
+		}
+		print(N[,c(1:7,max(age))])
+
+		return(stock)
+	})
+	
+}
+
 # MAIN
 stock <- calcAgeSchedules(stock)
 stock <- calcSteepnessBo(stock)
+stock <- ageStructuredModel(stock,data)
 
