@@ -18,12 +18,12 @@ stock$a 	<- stock$winf/(stock$linf^stock$b)
 stock$ah 	<- 8.0
 stock$gh	<- 0.5
 # selectivity parameters
-stock$sel50 <- 4.0
-stock$sel95 <- 7.0
+stock$sel50 <- 1.5
+stock$sel95 <- 1.51
 # population parameters
 stock$m  	<- 0.20
 stock$fmsy 	<- 0.12
-stock$msy 	<- 1.00
+stock$msy 	<- 350.
 
 # class(stock) = "stock"
 
@@ -94,29 +94,49 @@ calcSteepnessBo <- function(stock)
 
 ageStructuredModel <- function(stock,data)
 {
-	stock <- c(as.list(stock),as.list(data))
+	
+	attach(data); on.exit(detach(data))
 	with(stock,{
 		so   <- reck/phie
 		beta <- (reck-1.0)/(bo)
 		N    <- matrix(nrow=length(year)+1,ncol=length(age))
 		N[1,]<- ro*lx
+		ft   <- vector("numeric",length=length(year))
 		apo  <- age[-min(age)]
 		amo  <- age[-max(age)]
 		nage <- max(age)
 		for (i in 1:length(year)) 
 		{
-			st         <- exp(-m-0*fmsy*va)
+			ft[i]	   <- getFt(catch[i],m,va,wa,N[i,])
+			st         <- exp(-m-ft[i]*va)
 			ssb        <- sum(N[i,]*fa)
 			N[i+1,1]   <- so*ssb/(1+beta*ssb)
 			N[i+1,apo] <- N[i,amo] * st[amo]
 			N[i+1,nage]<- N[i+1,nage]+N[i,nage] * st[nage]
 		}
-		print(N[,c(1:7,max(age))])
-
+		
+		bt  <- as.vector(N %*% wa)
 		return(stock)
 	})
 	
 }
+
+getFt <- function(ct,m,va,wa,na)
+{	#use newtons root finding method to get ft
+	ft 	<- ct/(sum(na*exp(-m/2)*wa*va))	
+	for(iter in 1:7)
+	{
+		T1	<- wa*na
+		T2	<- exp(-m-ft*va)
+		T3	<- (1-T2)
+		T4	<- m+ft*va
+		c1	<- sum(ft*va*T1*T3/T4)
+		c2	<- sum(va*T1*T3/T4 - ft*va^2*T1*T3/T4^2 + ft*va^2*T1*T2/T4)
+		ft	<- ft - (c1-ct)/c2	#newton step.
+	}
+	return (ft)
+}
+
 
 # MAIN
 stock <- calcAgeSchedules(stock)

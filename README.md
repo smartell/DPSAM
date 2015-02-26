@@ -13,7 +13,7 @@ Data Poor Stock Assessment Methods
 - [x] Coordinate meeting with WPFMC staff (re: identify data sources & collaborators)
 
 **February 2015** Deliverable: meeting in Honolulu
-- [ ] Meeting with WPFMC staff re: data and overview of the integrated modeling framework, access to code repository.
+- [x] Meeting with WPFMC staff re: data and overview of the integrated modeling framework, access to code repository.
 - [ ] Develop age-structured model with leading MSY-FMSY parameters & integrate into the Catch-MSY framework.
 
 **March 2015** Deliverable: conduct training workshop on ADMB in Honolulu
