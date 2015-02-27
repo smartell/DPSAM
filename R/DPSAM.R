@@ -2,8 +2,14 @@
 #' @name dpsam package
 #' @docType package
 #' @author STEVEN MARTELL
+if(!require(foreach)) install.packages("foreach")
+if(!require(doParallel)) install.packages("doParallel")
 library(tools)
 library(roxygen2)
+library(RcppParallel)
+library(foreach)
+library(doParallel)
+# install.packages("RcppParallel")
 
 # STOCK CLASS
 stock 		<- new.env()
@@ -18,8 +24,8 @@ stock$a 	<- stock$winf/(stock$linf^stock$b)
 stock$ah 	<- 8.0
 stock$gh	<- 0.5
 # selectivity parameters
-stock$sel50 <- 1.5
-stock$sel95 <- 1.51
+stock$sel50 <- 3.0
+stock$sel95 <- 5.0
 # population parameters
 stock$m  	<- 0.20
 stock$fmsy 	<- 0.12
@@ -32,6 +38,13 @@ dfile <- "NamibianHake.dat"
 data <- read.table(dfile,header=TRUE)
 save(data,file=paste0(file_path_sans_ext(dfile),".Rd"))
 # class(data) = "model_data"
+
+n <- 100
+prior_msy  <- rnorm(n,mean=mean(data$catch),sd =0.2*mean(data$catch) )
+prior_fmsy <- runif(n,0.01,0.5)
+prior_m    <- rnorm(n,mean=stock$m,sd=0.1*stock$m)
+prior      <- data.frame(msy=prior_msy,fmsy=prior_fmsy,m=prior_m,no=1:n)
+
 
 
 calcAgeSchedules <- function(stock)
@@ -59,7 +72,6 @@ calcSteepnessBo <- function(stock)
 		qa  <- va*oa/za
 		t2  <- wa*va^2/za
 		t3  <- exp(-za)-oa/za
-
 		lz[1]    <- 1.0
 		dlz.df	 <- 0.0
 		dphie.df <- 0.0
@@ -99,7 +111,7 @@ ageStructuredModel <- function(stock,data)
 	with(stock,{
 		so   <- reck/phie
 		beta <- (reck-1.0)/(bo)
-		N    <- matrix(nrow=length(year)+1,ncol=length(age))
+		N    <- matrix(nrow=length(year),ncol=length(age))
 		N[1,]<- ro*lx
 		ft   <- vector("numeric",length=length(year))
 		apo  <- age[-min(age)]
@@ -110,9 +122,12 @@ ageStructuredModel <- function(stock,data)
 			ft[i]	   <- getFt(catch[i],m,va,wa,N[i,])
 			st         <- exp(-m-ft[i]*va)
 			ssb        <- sum(N[i,]*fa)
-			N[i+1,1]   <- so*ssb/(1+beta*ssb)
-			N[i+1,apo] <- N[i,amo] * st[amo]
-			N[i+1,nage]<- N[i+1,nage]+N[i,nage] * st[nage]
+			if(i < length(year))
+			{
+				N[i+1,1]   <- so*ssb/(1+beta*ssb)
+				N[i+1,apo] <- N[i,amo] * st[amo]
+				N[i+1,nage]<- N[i+1,nage]+N[i,nage] * st[nage]
+			}
 		}
 		
 		bt  <- as.vector(N %*% wa)
@@ -134,12 +149,54 @@ getFt <- function(ct,m,va,wa,na)
 		c2	<- sum(va*T1*T3/T4 - ft*va^2*T1*T3/T4^2 + ft*va^2*T1*T2/T4)
 		ft	<- ft - (c1-ct)/c2	#newton step.
 	}
+	# cat("ft = ",ft,"\n")
 	return (ft)
+}
+
+runModel <- function(pars,stock)
+{
+	
+	stock$msy  <- pars[1]
+	stock$fmsy <- pars[2]
+	stock$m    <- pars[3]
+	stock$no   <- pars[4]
+
+	stock <- calcAgeSchedules(stock)
+	stock <- calcSteepnessBo(stock)
+	stock <- ageStructuredModel(stock,data)
+	ret   <- 1
+	# return 0 if biomass went extinct.
+	if( any(is.na(stock$bt)) || any(stock$bt<0))
+	{
+		ret = 0
+	}
+	
+	stock$ret<-ret
+	return(as.list(stock))
 }
 
 
 # MAIN
-stock <- calcAgeSchedules(stock)
-stock <- calcSteepnessBo(stock)
-stock <- ageStructuredModel(stock,data)
+nodes <- detectCores()
+cl <- makeCluster(nodes)
+registerDoParallel(cl)
+ell <- apply(X=prior,MARGIN=1,FUN="runModel",stock=stock)
+Bt  <- ldply(ell,function(x) c(x[["ret"]],x[["bt"]]),.parallel=TRUE)
+Ft  <- ldply(ell,function(x) c(x[["ret"]],x[["ft"]]),.parallel=TRUE)
+colnames(Bt) <- colnames(Ft) <- c("Ret",data$year)
+
+Theta <- ldply(ell,function(x) c(x[["ret"]],x[["msy"]],x[["fmsy"]],x[["m"]]),.parallel=TRUE)
+
+stopCluster(cl)
+
+# fn  <- function(e)
+# {
+# 	data.frame(iter=e$no,ret=e$ret,
+# 	           yr=data$year,
+# 	           bt=e$bt[1:23],
+# 	           ft=e$ft,
+# 	           row.names=NULL)
+# }
+# XX <- ldply(ell,fn)
+
 
