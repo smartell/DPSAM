@@ -5,11 +5,15 @@
 if(!require(foreach)) install.packages("foreach")
 if(!require(doParallel)) install.packages("doParallel")
 library(tools)
+library(plyr)
 library(roxygen2)
+library(Rcpp)
 library(RcppParallel)
 library(foreach)
 library(doParallel)
 # install.packages("RcppParallel")
+
+sourceCpp("src/sra.cpp")
 
 # STOCK CLASS
 stock 		<- new.env()
@@ -177,17 +181,20 @@ runModel <- function(pars,stock)
 
 
 # MAIN
-nodes <- detectCores()
-cl <- makeCluster(nodes)
-registerDoParallel(cl)
+# nodes <- detectCores()
+# cl <- makeCluster(nodes)
+# registerDoParallel(cl)
+
 ell <- apply(X=prior,MARGIN=1,FUN="runModel",stock=stock)
-Bt  <- ldply(ell,function(x) c(x[["ret"]],x[["bt"]]),.parallel=TRUE)
-Ft  <- ldply(ell,function(x) c(x[["ret"]],x[["ft"]]),.parallel=TRUE)
+Bt  <- ldply(ell,function(x) c(x[["ret"]],x[["bt"]]),.parallel=FALSE)
+Ft  <- ldply(ell,function(x) c(x[["ret"]],x[["ft"]]),.parallel=FALSE)
 colnames(Bt) <- colnames(Ft) <- c("Ret",data$year)
 
-Theta <- ldply(ell,function(x) c(x[["ret"]],x[["msy"]],x[["fmsy"]],x[["m"]]),.parallel=TRUE)
+Theta <- ldply(ell,function(x) c(x[["ret"]],x[["msy"]],x[["fmsy"]],x[["m"]]),.parallel=FALSE)
 
-stopCluster(cl)
+
+
+# stopCluster(cl)
 
 # fn  <- function(e)
 # {
