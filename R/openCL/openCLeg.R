@@ -35,8 +35,8 @@ fun <-function(n=10)
 {
 	x <- seq(0.5,5,length=n)
 	bm <- within(benchmark("CPU"=dnorm(x),
-	             "HD Graphics 4000"=f1(x),
-	             "GeForce GT 650M"=f2(x),
+	             "Iris Pro"=f1(x),
+	             "GeForce GT 750M"=f2(x),
 	             replications=10),
 	{average=user.self/replications})
 
