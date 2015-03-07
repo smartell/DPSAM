@@ -4,6 +4,7 @@ using namespace Rcpp;
 // [[Rcpp::plugins(cpp11)]]
  
 
+
  /**
   * @brief Class stock
   * @details The basic stock class that is used for Stock Reduction Analysis
@@ -228,9 +229,60 @@ using namespace Rcpp;
  	
   void initializeModel(void);
  	void ageStructuredModel(void);
- 	
+ 	double getFt(double &ct, double &m, NumericVector &va,
+               NumericVector &wa, NumericVector& na);
  	
  };
+ 
+ /**
+  * @brief Get fishing mortality rate
+  * @details Solve Baranov Catch equation to get instantaneous Fishing Mortality rate
+  * 
+  * @param ct catch (in weight units)
+  * @param m Natural mortality
+  * @param va Vulnerability/selectivity at age
+  * @param wa Mean weight at age
+  * @param na Numbers at age
+  * @return Fishing mortality rate
+  */
+ double sra::getFt(double &ct, double &m, NumericVector &va,
+               NumericVector &wa, NumericVector& na)
+ {
+    // Start with popes approximation.
+    double tmp = 0;
+    for (int j = 0; j < m_ageSize; ++j)
+    {
+      tmp += na[j] * exp(-0.5*m) * wa[j] * va[j];
+    }
+    double ft = ct / tmp;
+
+    int MAXIT = 10;
+    NumericVector T1(m_ageSize-1);
+    NumericVector T2(m_ageSize-1);
+    NumericVector T3(m_ageSize-1);
+    NumericVector T4(m_ageSize-1);
+
+    for (int iter = 0; iter < MAXIT; ++iter)
+    {
+      double c1 = 0;
+      double c2 = 0;
+      for (int j = 0; j < m_ageSize; ++j)
+      {
+        T1[j] = wa[j] * na[j];
+        T4[j] = m + ft*va[j];
+        T2[j] = exp(-T4[j]);
+        T3[j] = (1.-T2[j]);
+        c1   += ft*va[j]*T1[j]*T3[j]/T4[j];
+        c2   += va[j]*T1[j]*T3[j]/T4[j] 
+              - ft*va[j]*va[j]*T1[j]*T3[j]/(T4[j]*T4[j])
+              + ft*va[j]*va[j]*T1[j]*T2[j]/T4[j];
+      }
+      ft -= (c1-ct)/c2;
+    }
+
+    return(ft);
+ }
+
 
  void sra::initializeModel(void)
  {
@@ -248,7 +300,7 @@ using namespace Rcpp;
  void sra::ageStructuredModel(void)
  {
     
-    
+    NumericVector na(m_ageSize-1);
     NumericVector ft(m_yearSize-1);
     NumericVector tbt(m_yearSize-1); // total biomass
     NumericVector sbt(m_yearSize-1); // spawning biomass
@@ -276,8 +328,10 @@ using namespace Rcpp;
       {
         sbt[i] += N(i,j) * m_fa[j];  
         tbt[i] += N(i,j) * m_wa[j];
-        // Rcpp::Rcout<<m_fa[j]<<" ";
+        na[j]   = N(i,j);
+        // Rcpp::Rcout<<na[j]<<" ";
       }
+      ft[i] = getFt(m_chat[i],m,m_va,m_wa,na);
       // Rcpp::Rcout<<"\n"<<bo<<"\t"<<sbt[i]<<"\t"<<so*sbt[i]/(1.+beta*sbt[i])<<"\n"<<std::endl;
 
       // Update numbers at age
@@ -306,29 +360,8 @@ using namespace Rcpp;
 
         // Rcpp::Rcout<<j<<" age "<<m_age[j]<<"\t"<<za<<" "<<N(i,j)<<std::endl;
       }
+      Rcpp::Rcout<<m_year[i]<<"\t"<<tbt[i]<<std::endl;
 
-
-      // N(i+1,0)   = so*sbt/(1.+beta*sbt);
-      // Rcpp::Rcout<<"\n";
-      // for (int j = 0; j < m_ageSize; ++j)
-      // {
-      //   za[j]    = m + ft[i]*m_va[j];
-      //   sa[j]    = exp(-za[j]);
-      //   N(i+1,j+1) = N(i,j) * sa[j];
-      //   if(m_age[j] == m_nage)
-      //   {
-      //     N(i+1,j+1) += N(i,j+1) * sa[j+1];
-      //     Rcpp::Rcout<<j<<" "<<m_age[j]<<std::endl;
-      //   }
-
-      //   // Rcpp::Rcout<<N(i,j)<<" ";
-      //   Rcpp::Rcout<<j<<" age "<<m_age[j]<<"\t"<<za[j]<<" "<<N(i,j)<<std::endl;
-      // }
-    //   Rcpp::Rcout<<"age "<<m_age[m_nage]<<"\t"<<za[m_nage]<<" "<<N(i,m_nage)<<std::endl;
-    //   bt[i+1] = sum( N(i+1,_) * m_wa );
-      
-    //   // Rcpp::Rcout<<i<<"\t"<<N(i,0)<<"\t"<<N(i,m_nage)<<"\t";
-    //   // Rcpp::Rcout<<so*sbt/(1.+beta*sbt)<<std::endl;
     }
 
 
