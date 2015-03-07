@@ -17,3 +17,15 @@ To develop a user friendly web-based interface for conducing data poor stock ass
 x <- x+1
 ```
 
+```
+.
+|____data
+| |____lib
+| | |____guiINFO.R
+| | |____guiSRA.R
+|____helpers.R
+|____server.R
+|____ui.R
+|____www
+| |____About.md
+```
