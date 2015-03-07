@@ -250,7 +250,9 @@ using namespace Rcpp;
     
     
     NumericVector ft(m_yearSize-1);
-    NumericVector bt(m_yearSize-1);
+    NumericVector tbt(m_yearSize-1); // total biomass
+    NumericVector sbt(m_yearSize-1); // spawning biomass
+
     NumericMatrix N(m_yearSize,m_ageSize-1);
 
     double sa,za;
@@ -263,21 +265,20 @@ using namespace Rcpp;
       N(0,j) = ro * m_lx[j];
       // Rcpp::Rcout<<N(0,j)<<" ";
     }
-    // N(0,_) = ro * m_lx;
-    bt[0] = sum(N(0,_)*m_wa);
     
 
     // Rcpp::Rcout<<nyrs<<std::endl;
     for (int i = 0; i < m_yearSize; ++i)
     {
       ft[i] = 0;
-      double sbt = 0;// = sum(N(i,_) * m_fa);
+      
       for (int j = 0; j < m_ageSize; ++j)
       {
-        sbt += N(i,j) * m_fa[j];
-        Rcpp::Rcout<<m_fa[j]<<" ";
+        sbt[i] += N(i,j) * m_fa[j];  
+        tbt[i] += N(i,j) * m_wa[j];
+        // Rcpp::Rcout<<m_fa[j]<<" ";
       }
-      Rcpp::Rcout<<"\n"<<bo<<"\t"<<sbt<<"\t"<<so*sbt/(1.+beta*sbt)<<"\n"<<std::endl;
+      // Rcpp::Rcout<<"\n"<<bo<<"\t"<<sbt[i]<<"\t"<<so*sbt[i]/(1.+beta*sbt[i])<<"\n"<<std::endl;
 
       // Update numbers at age
       for (int j = 0; j < m_ageSize; ++j)
@@ -288,7 +289,7 @@ using namespace Rcpp;
         // New recruits.
         if(m_age[j] == m_sage)
         {
-          N(i+1,j) = so*sbt/(1.+beta*sbt);
+          N(i+1,j) = so*sbt[i]/(1.+beta*sbt[i]);
         }
 
         // Survive each cohort
@@ -303,7 +304,7 @@ using namespace Rcpp;
           N(i+1,j) += N(i,j) * sa;
         }
 
-        Rcpp::Rcout<<j<<" age "<<m_age[j]<<"\t"<<za<<" "<<N(i,j)<<std::endl;
+        // Rcpp::Rcout<<j<<" age "<<m_age[j]<<"\t"<<za<<" "<<N(i,j)<<std::endl;
       }
 
 
