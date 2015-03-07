@@ -58,7 +58,7 @@ using namespace Rcpp;
      	calcAgeSchedule();
       calcSteepnessBo();
      	
-     	Rcpp::Rcout<<"phie = "<<phie<<std::endl;
+     	// Rcpp::Rcout<<"phie = "<<phie<<std::endl;
      }
 
      
@@ -91,7 +91,7 @@ using namespace Rcpp;
     m_nage  = max(m_age);
     m_ageSize = m_age.size();
 
-    Rcpp::Rcout<<"size of age = "<<m_ageSize<<std::endl;
+    // Rcpp::Rcout<<"size of age = "<<m_ageSize<<std::endl;
     NumericVector la( m_ageSize-1 );
     NumericVector wa( m_ageSize-1 );
     NumericVector fa( m_ageSize-1 );
@@ -193,15 +193,15 @@ using namespace Rcpp;
       dphiq_df += wa[i]*qa[i]*dlz_df + lz[i]*t2[i]*t3[i];
       phif     += lz[i]*fa[i];
       phiq     += lz[i]*qa[i]*wa[i];
-      Rcpp::Rcout<<i<<"\t"<<m_age[i]<<" \t";
-      Rcpp::Rcout<<m_lx[i]<<"\t"<<lz[i]<<std::endl;
+      // Rcpp::Rcout<<i<<"\t"<<m_age[i]<<" \t";
+      // Rcpp::Rcout<<m_lx[i]<<"\t"<<lz[i]<<std::endl;
     }
     reck = phie/phif - (fmsy*phiq*phie/(phif*phif)*dphif_df) / (phiq+fmsy*dphiq_df);
     re   = msy / (fmsy*phiq);
     ro   = re*(reck-1.0)/(reck-phie/phif);
     bo   = ro * phie;
     spr  = phif/phie;
-    Rcpp::Rcout<<"Unfished recruits = "<<ro<<std::endl;
+    // Rcpp::Rcout<<"Unfished recruits = "<<ro<<std::endl;
  }
 
  /**
@@ -359,10 +359,10 @@ using namespace Rcpp;
         }
 
         // Rcpp::Rcout<<j<<" age "<<m_age[j]<<"\t"<<za<<" "<<N(i,j)<<std::endl;
-      }
-      Rcpp::Rcout<<m_year[i]<<"\t"<<tbt[i]<<std::endl;
+      }  // end j
+      // Rcpp::Rcout<<m_year[i]<<"\t"<<tbt[i]<<std::endl;
 
-    }
+    } // end i
 
 
 

@@ -49,17 +49,41 @@ stockId$data <- data
 A<-stockId
 sourceCpp("src/dpsam.cpp");
 # mod <- new(stock,A);
-mod<-new(sra,A);
-mod$initializeModel();
-mod$ageStructuredModel()
+# mod<-new(sra,A);
+# mod$initializeModel();
+# mod$ageStructuredModel()
+
+runCModel <- function(prior,L)
+{
+	L$msy  <- prior[1]
+	L$fmsy <- prior[2]
+	L$m    <- prior[3]
+	L$no   <- prior[4]
 
 
+	mod <- new(sra,L)
+	mod$initializeModel();
+	mod$ageStructuredModel();
+
+	return(1)
+}
 
 # class(stockId) = "stockId"
 
 # mod  <- new(Sra,stockId)
-
-
+n <- 500
+prior_msy  <- rnorm(n,mean=stockId$msy,sd =0.2*stockId$msy )
+prior_fmsy <- runif(n,0.01,0.5)
+prior_m    <- rnorm(n,mean=stockId$m,sd=0.05*stockId$m)
+prior      <- data.frame(msy=prior_msy,
+                         fmsy=prior_fmsy,
+                         m=prior_m,
+                         no=1:n)
+fn <- function()
+{
+ell <- apply(X=prior,MARGIN=1,FUN="runCModel",L=A)
+	
+}
 
 
 
