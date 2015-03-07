@@ -1,25 +1,34 @@
+source("helpers.R")
+
+
+
+
+
+
+
+
 shinyUI(fluidPage(
-    titlePanel("Data Poor Stock Assessment Methods (DPSAM)"),
-
-    sidebarLayout(
-   		sidebarPanel( h5("Stock Parameters"),
-   			selectInput("stockname", "Stock ID:",
-            c("Namibian hake" = "nhake",
-              "Demo" = "demo",
-              "Example" = "example")),
-
-   			sliderInput("sldr_fmsy","Fmsy Range:",
-   			            min=0,max=1.0,value=c(0.0,0.25),step = 0.05),
-
-   			sliderInput("sldr_cmsy","MSY Range:",
-   			            min=0,max=2*max(data$catch),value=range(data$catch)),
-
-   			sliderInput("sldr_natm","Natural Mortality Range:",
-   			            min=0,max=1.0,value=c(0.1,0.3),step=0.05)
-   		),
-    
-    	mainPanel("main panel")
-  	)
+        navbarPage("Data Poor Stock Assessment Methods (DPSAM)",
+                   id="nav",
+                   # footer=img(src="iphclogo.png",  height = 60, width = 60),
+  
+  # ---------------------------------------- #
+  # ABOUT INTERFACE
+  # ---------------------------------------- #
+  tabPanel("INFO",
+      guiINFO()
+  ),
+  
 
 
-))
+  # ---------------------------------------- #
+  # SRA INTERFACE
+  # ---------------------------------------- #
+  tabPanel("SRA",
+      guiSRA()
+  )
+
+   
+
+
+)))

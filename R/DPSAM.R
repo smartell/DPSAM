@@ -53,7 +53,7 @@ sourceCpp("src/dpsam.cpp");
 # mod$initializeModel();
 # mod$ageStructuredModel()
 
-runCModel <- function(prior,L)
+runCppModel <- function(prior,L)
 {
 	L$msy  <- prior[1]
 	L$fmsy <- prior[2]
@@ -81,7 +81,7 @@ prior      <- data.frame(msy=prior_msy,
                          no=1:n)
 fn <- function()
 {
-ell <- apply(X=prior,MARGIN=1,FUN="runCModel",L=A)
+ell <- apply(X=prior,MARGIN=1,FUN="runCppModel",L=A)
 	
 }
 
