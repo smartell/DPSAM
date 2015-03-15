@@ -26,7 +26,7 @@ stockId$winf  	<- 5.0
 stockId$b     	<- 3.0
 stockId$a 		<- stockId$winf/(stockId$linf^stockId$b)
 # maturity parameters
-stockId$ah 		<- 8.0
+stockId$ah 		<- log(3)/stockId$k
 stockId$gh		<- 0.5
 # selectivity parameters
 stockId$sel50 	<- 3.0
@@ -65,6 +65,7 @@ runCppModel <- function(prior,L)
 	mod$initializeModel();
 	mod$ageStructuredModel();
 
+	on.exit(rm(mod))
 	return(1)
 }
 
@@ -81,8 +82,8 @@ prior      <- data.frame(msy=prior_msy,
                          no=1:n)
 fn <- function()
 {
-ell <- apply(X=prior,MARGIN=1,FUN="runCppModel",L=A)
-	
+	ell <- apply(X=prior,MARGIN=1,FUN="runCppModel",L=A)
+	return(ell)
 }
 
 

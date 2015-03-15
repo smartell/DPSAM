@@ -1,8 +1,10 @@
 #include <Rcpp.h>
 #include <Rcpp/Benchmark/Timer.h>
+
 using namespace Rcpp; 
 // [[Rcpp::plugins(cpp11)]]
  
+
 
 
  /**
@@ -222,18 +224,30 @@ using namespace Rcpp;
   NumericVector m_cpue;
 
   NumericMatrix m_N;
+  NumericVector m_bt;
  	
  public:
  	sra(const stock &c_stock)
  	:stock(c_stock) {}
  	
+  // Methods
   void initializeModel(void);
  	void ageStructuredModel(void);
  	double getFt(double &ct, double &m, NumericVector &va,
                NumericVector &wa, NumericVector& na);
  	
+  void runModel(void);
+
+  // Getters
+  NumericVector getBt() {return m_bt;}
  };
  
+ void sra::runModel()
+ {
+    initializeModel();
+    ageStructuredModel();
+ }
+
  /**
   * @brief Get fishing mortality rate
   * @details Solve Baranov Catch equation to get instantaneous Fishing Mortality rate
@@ -366,6 +380,7 @@ using namespace Rcpp;
 
 
 
+    m_bt = sbt;
 
     // Rcpp::Rcout<<N(0,m_nage-1)<<"\t"<<N(1,m_nage-2)<<std::endl;
   
@@ -375,6 +390,8 @@ using namespace Rcpp;
 
  RCPP_MODULE(sra_module) 
  {
+  using namespace Rcpp; 
+
     class_<stock>("stock")
     .constructor<List>()
     .property( "m_stock", &stock::get_stock, &stock::set_stock )
@@ -383,9 +400,11 @@ using namespace Rcpp;
     ;
 
     class_<sra>("sra")
-	.constructor<stock>()
-  .method( "ageStructuredModel", &sra::ageStructuredModel )
-	.method( "initializeModel", &sra::initializeModel )
+      .constructor<stock>()
+      .method( "ageStructuredModel", &sra::ageStructuredModel )
+      .method( "initializeModel", &sra::initializeModel )
+    	.method( "runModel", &sra::runModel )
+      .property( "m_bt", &sra::getBt )
 	;
  }
 
