@@ -14,12 +14,12 @@ Data Poor Stock Assessment Methods
 
 **February 2015** Deliverable: meeting in Honolulu
 - [x] Meeting with WPFMC staff re: data and overview of the integrated modeling framework, access to code repository.
-- [ ] Develop age-structured model with leading MSY-FMSY parameters & integrate into the Catch-MSY framework.
+- [x] Develop age-structured model with leading MSY-FMSY parameters & integrate into the Catch-MSY framework.
 
 **March 2015** Deliverable: conduct training workshop on ADMB in Honolulu
-- [ ] ADMB-training workshop in Honolulu HI.
+- [x] ADMB-training workshop in Honolulu HI.
 - [ ] Add routines to allow fitting auxiliary data (changes in mean size, trends in density, density estimates from UWVC surveys)
-- [ ] Contribution to Wakefield symposium.
+- [x] Contribution to Wakefield symposium.
 
 **June 2015**
 - [ ] Develop web-based interface for running and viewing output from the DPSAM.
