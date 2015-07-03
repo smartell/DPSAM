@@ -87,7 +87,7 @@ using namespace Rcpp;
     ah    = as<double>(m_stock["ah"]);
     gh    = as<double>(m_stock["gh"]);
     fmsy  = as<double>(m_stock["fmsy"]);
-    msy   = as<double>(m_stock["msy"]);
+    msy   = as<double>(m_stock["cmsy"]);
     sel50 = as<double>(m_stock["sel50"]);
     sel95 = as<double>(m_stock["sel95"]);
     m_age = as<NumericVector>(m_stock["age"]);

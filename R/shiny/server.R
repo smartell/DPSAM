@@ -17,19 +17,9 @@ shinyServer(function(input, output, session)
  #      params
  #    }
 
-	getData <- function()
-	{
-		data <- lapply(dataDF[,1],function(p)
-		{
-			input[[p]]
-		})
-		names(data) <- dataDF[,1]
-		data$age = 0:data[["age"]]
-		data$a = data[["winf"]]/(data[["linf"]]^data[["b"]])
-		return(list(data))
-	}
+	
 
-	M <- reactive(do.call(sraModel,getData()))
+	M <- reactive(do.call(sraModel,getData(input)))
 
 	output$mDataTable <- renderTable({
 		mData

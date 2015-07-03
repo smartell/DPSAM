@@ -20,6 +20,9 @@ sourceCpp("data/src/dpsam.cpp");
 for(nm in .RFILES) source(file.path(.LIB, nm), echo=FALSE)
 
 # Link to data file
+.DAT		<- "data/"
+.DFILES		<- list.files(.DAT,pattern="\\.[Dd]at")
+
 dfile <- "data/NamibianHake.dat"
 mData <- read.table(dfile,header=TRUE)
 

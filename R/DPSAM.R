@@ -47,7 +47,7 @@ stockId$cpue <- data$cpue
 stockId$data <- data
 
 A<-stockId
-sourceCpp("src/dpsam.cpp");
+sourceCpp("shiny/data/src/dpsam.cpp");
 # mod <- new(stock,A);
 # mod<-new(sra,A);
 # mod$initializeModel();
@@ -57,7 +57,7 @@ runCppModel <- function(prior,L)
 {
 	on.exit(rm(mod))
 
-	L$msy  <- prior[1]
+	L$cmsy <- prior[1]
 	L$fmsy <- prior[2]
 	L$m    <- prior[3]
 	L$no   <- prior[4]
