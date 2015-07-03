@@ -39,7 +39,7 @@ stockId$msy 	<- 250.
 
 # MODEL_DATA CLASS
 dfile <- "NamibianHake.dat"
-data <- read.table(dfile,header=TRUE)
+data  <- read.table(dfile,header=TRUE)
 save(data,file=paste0(file_path_sans_ext(dfile),".Rd"))
 stockId$chat <- data$catch
 stockId$year <- data$year
@@ -55,6 +55,8 @@ sourceCpp("src/dpsam.cpp");
 
 runCppModel <- function(prior,L)
 {
+	on.exit(rm(mod))
+
 	L$msy  <- prior[1]
 	L$fmsy <- prior[2]
 	L$m    <- prior[3]
@@ -64,15 +66,28 @@ runCppModel <- function(prior,L)
 	mod <- new(sra,L)
 	mod$initializeModel();
 	mod$ageStructuredModel();
-
-	on.exit(rm(mod))
-	return(1)
+	bt  <- mod$getBt();
+	print(bt)
+	return(bt)
 }
 
-# class(stockId) = "stockId"
-
-# mod  <- new(Sra,stockId)
+# 
+# Sample from prior distribution.
+# 
 n <- 500
+# dfPriorInfo <- data.frame(id   =1:3,
+#                           plbl = c("msy","fmsy","m"),
+#                           dist = c("rnorm","runif","rnorm"),
+#                           par1 = c(stockId$msy,0.01,stockId$m),
+#                           par2 = c(0.2*stockId$msy,0.50,0.05*stockId$m),
+#                           stringsAsFactors=FALSE)
+
+# X <- dfPriorInfo
+# # dfn <- do.call(paste(X$dist),list(n,X$par1,X$par2))
+# dfn <- (function(X) data.frame(draws=(do.call(paste(X$dist),list(n,X$par1,X$par2)))))
+# # dfPriors <- ddply(dfPriorInfo,"id",.fun = (function(X) data.frame(draws=(do.call(paste(X$dist),list(n,X$par1,X$par2))))))
+# dfPriors <- ddply(dfPriorInfo,"id",.fun = dfn )
+
 prior_msy  <- rnorm(n,mean=stockId$msy,sd =0.2*stockId$msy )
 prior_fmsy <- runif(n,0.01,0.5)
 prior_m    <- rnorm(n,mean=stockId$m,sd=0.05*stockId$m)
@@ -85,6 +100,8 @@ fn <- function()
 	ell <- apply(X=prior,MARGIN=1,FUN="runCppModel",L=A)
 	return(ell)
 }
+
+
 
 
 

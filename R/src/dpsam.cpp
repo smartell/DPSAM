@@ -1,6 +1,10 @@
 #include <Rcpp.h>
 #include <Rcpp/Benchmark/Timer.h>
 
+#undef COUT
+#define COUT(object) Rcpp::Rcout << #object "\n" << object << std::endl;
+
+
 using namespace Rcpp; 
 // [[Rcpp::plugins(cpp11)]]
  
@@ -206,6 +210,22 @@ using namespace Rcpp;
     // Rcpp::Rcout<<"Unfished recruits = "<<ro<<std::endl;
  }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  /**
   * @brief Stock Reduction Analysis.
   * @details 
@@ -237,6 +257,7 @@ using namespace Rcpp;
                NumericVector &wa, NumericVector& na);
  	
   void runModel(void);
+  void print(void);
 
   // Getters
   NumericVector getBt() {return m_bt;}
@@ -244,9 +265,20 @@ using namespace Rcpp;
  
  void sra::runModel()
  {
+    Rcpp::Rcout<<"runModel"<<std::endl;
     initializeModel();
     ageStructuredModel();
  }
+
+void sra::print()
+{
+  Rcpp::Rcout<<"** SRA SUMMARY STATISTICS                **"<<std::endl;
+  Rcpp::Rcout<<"** ------------------------------------- **"<<std::endl;
+  Rcpp::Rcout<<"   B1        = " << m_bt[0]                 <<std::endl;
+  Rcpp::Rcout<<"   Bterm     = " << m_bt[m_yearSize]        <<std::endl;
+  Rcpp::Rcout<<"   Depletion = " << m_bt[m_yearSize]/m_bt[0]<<std::endl;
+  Rcpp::Rcout<<"** ------------------------------------- **"<<std::endl;
+}
 
  /**
   * @brief Get fishing mortality rate
@@ -393,18 +425,19 @@ using namespace Rcpp;
   using namespace Rcpp; 
 
     class_<stock>("stock")
-    .constructor<List>()
-    .property( "m_stock", &stock::get_stock, &stock::set_stock )
-    .method( "calcAgeSchedule", &stock::calcAgeSchedule )
-    .method( "calcSteepnessBo", &stock::calcSteepnessBo )
+      .constructor<List>()
+      .property( "m_stock", &stock::get_stock, &stock::set_stock )
+      .method( "calcAgeSchedule", &stock::calcAgeSchedule )
+      .method( "calcSteepnessBo", &stock::calcSteepnessBo )
     ;
 
     class_<sra>("sra")
       .constructor<stock>()
+      .property( "m_bt", &sra::getBt, "Spawning stock biomass")
       .method( "ageStructuredModel", &sra::ageStructuredModel )
       .method( "initializeModel", &sra::initializeModel )
-    	.method( "runModel", &sra::runModel )
-      .property( "m_bt", &sra::getBt )
-	;
+      .method( "runModel", &sra::runModel )
+      .method( "print", &sra::print )
+	   ;
  }
 

@@ -2,20 +2,21 @@
 
 guiSRA <- function()
 {
+  data <- mData
    sidebarLayout(
    		sidebarPanel( h5("Stock Parameters"),
-   			selectInput("stockname", "Stock ID:",
+   			selectInput("stockname", h6("Stock ID:"),
             c("Namibian hake" = "nhake",
               "Demo" = "demo",
               "Example" = "example")),
 
-   			sliderInput("sldr_fmsy","Fmsy Range:",
+   			sliderInput("sldr_fmsy",h6("Fmsy Range:"),
    			            min=0,max=1.0,value=c(0.0,0.25),step = 0.05),
 
-   			sliderInput("sldr_cmsy","MSY Range:",
+   			sliderInput("sldr_cmsy",h6("MSY Range:"),
    			            min=0,max=2*max(data$catch),value=range(data$catch)),
 
-   			sliderInput("sldr_natm","Natural Mortality Range:",
+   			sliderInput("sldr_natm",h6("Natural Mortality Range:"),
    			            min=0,max=1.0,value=c(0.1,0.3),step=0.05),
             hr(),
             actionButton("actionRunSRA", label = "Run SRA")

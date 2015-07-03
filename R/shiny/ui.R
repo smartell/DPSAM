@@ -8,7 +8,7 @@ source("helpers.R")
 
 
 shinyUI(fluidPage(
-        navbarPage("Data Poor Stock Assessment Methods (DPSAM)",
+        navbarPage("DPSAM",
                    id="nav",
                    # footer=img(src="iphclogo.png",  height = 60, width = 60),
   
@@ -22,7 +22,7 @@ shinyUI(fluidPage(
   # ---------------------------------------- #
   # STOCK INTERFACE
   # ---------------------------------------- #
-  tabPanel("STOCK",
+  tabPanel("INPUT",
       guiSTOCK()
   ),
 

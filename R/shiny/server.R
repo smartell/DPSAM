@@ -1,4 +1,4 @@
-library(shiny)
+
 
 shinyServer(function(input, output, session) 
 {
@@ -31,7 +31,7 @@ shinyServer(function(input, output, session)
 
 	M <- reactive(do.call(sraModel,getData()))
 
-	output$mData <- renderTable({
+	output$mDataTable <- renderTable({
 		mData
 	})
 	# scnA <- reactive(do.call(equilibrium_model_cpp, getParams("A")))
