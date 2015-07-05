@@ -14,10 +14,10 @@ To develop a user friendly web-based interface for conducing data poor stock ass
 
 ```{r}
 #Some R code
-x <- x+1
+x <- rnorm(100,3,3)
 ```
 
-```
+```c++
 .
 |____data
 | |____lib

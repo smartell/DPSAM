@@ -2,6 +2,8 @@
 #' @name dpsam package
 #' @docType package
 #' @author STEVEN MARTELL
+
+
 # if(!require(foreach)) install.packages("foreach")
 # if(!require(doParallel)) install.packages("doParallel")
 library(tools)

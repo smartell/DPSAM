@@ -47,6 +47,7 @@ using namespace Rcpp;
     double sel50;
     double sel95;
     
+    double m_sb100;
 
     NumericVector m_age;
     NumericVector m_lx;
@@ -71,6 +72,9 @@ using namespace Rcpp;
      
     List get_stock()       { return m_stock; }
     void set_stock(List x_){ m_stock = x_;   }
+
+    double get_sb100()       { return m_sb100; }
+    void   set_sb100(double _sb100) { m_sb100 = _sb100; }
 
     void calcAgeSchedule();
     void calcSteepnessBo();
@@ -209,6 +213,8 @@ using namespace Rcpp;
     bo   = ro * phie;
     spr  = phif/phie;
     // Rcpp::Rcout<<"Unfished recruits = "<<ro<<std::endl;
+
+    m_sb100 = bo;
  }
 
 
@@ -257,7 +263,7 @@ using namespace Rcpp;
  	double getFt(double &ct, double &m, NumericVector &va,
                NumericVector &wa, NumericVector& na);
  	
-  void runModel(void);
+  DataFrame runModel(void);
   void print(void);
 
   // Getters
@@ -266,13 +272,28 @@ using namespace Rcpp;
 
  };
  
- void sra::runModel()
+ // void sra::runModel()
+ // {
+ //    // Rcpp::Rcout<<"runModel "<<std::endl;
+ //    initializeModel();
+ //    ageStructuredModel();
+ //    // print();
+ // }
+
+ DataFrame sra::runModel()
  {
-    Rcpp::Rcout<<"runModel "<<std::endl;
     initializeModel();
-    COUT(so);
     ageStructuredModel();
-    print();
+
+    COUT(m_year.size());
+    COUT(m_bt.size());
+
+    DataFrame df = DataFrame::create(
+        Named("Year")                 = m_year,
+        Named("Spawning.Biomass")     = m_bt
+        );
+
+    return(df);
  }
 
 void sra::print()
@@ -353,8 +374,8 @@ void sra::print()
     
     NumericVector na(m_ageSize-1);
     NumericVector ft(m_yearSize-1);
-    NumericVector tbt(m_yearSize-1); // total biomass
-    NumericVector sbt(m_yearSize-1); // spawning biomass
+    NumericVector tbt(m_yearSize); // total biomass
+    NumericVector sbt(m_yearSize); // spawning biomass
 
     NumericMatrix N(m_yearSize,m_ageSize-1);
 
@@ -409,7 +430,7 @@ void sra::print()
           N(i+1,j) += N(i,j) * sa;
         }
 
-        Rcpp::Rcout<<j<<" age "<<m_age[j]<<"\t"<<za<<" "<<N(i,j)<<std::endl;
+        // Rcpp::Rcout<<j<<" age "<<m_age[j]<<"\t"<<za<<" "<<N(i,j)<<std::endl;
       }  // end j
       // Rcpp::Rcout<<m_year[i]<<"\t"<<tbt[i]<<std::endl;
 
@@ -419,7 +440,7 @@ void sra::print()
     m_bt = sbt;
 
 
-    Rcpp::Rcout<<N(0,m_nage-1)<<"\t"<<N(1,m_nage-2)<<std::endl;
+    // Rcpp::Rcout<<N(0,m_nage-1)<<"\t"<<N(1,m_nage-2)<<std::endl;
   
  }
 
@@ -431,7 +452,8 @@ void sra::print()
 
     class_<stock>("stock")
       .constructor<List>()
-      .property( "m_stock", &stock::get_stock, &stock::set_stock )
+      .property( "stock", &stock::get_stock, &stock::set_stock )
+      .property( "sb100", &stock::get_sb100, &stock::set_sb100 )
       .method( "calcAgeSchedule", &stock::calcAgeSchedule )
       .method( "calcSteepnessBo", &stock::calcSteepnessBo )
     ;
@@ -442,6 +464,7 @@ void sra::print()
       .method( "ageStructuredModel", &sra::ageStructuredModel )
       .method( "initializeModel", &sra::initializeModel )
       .method( "runModel", &sra::runModel )
+      // .method( "runModel", &sra::runModel )
       .method( "print", &sra::print )
 	   ;
  }

@@ -14,7 +14,7 @@ if(!require("shinydashboard"))install.packages("shinydashboard")
 if(!require("dygraphs"))      install.packages("dygraphs")
 sourceCpp("data/src/dpsam.cpp");
 
-
+.THEME      <- theme_bw()
 .LIB        <- "data/lib/"
 .RFILES     <- list.files(.LIB,pattern="\\.[Rr]$")
 for(nm in .RFILES) source(file.path(.LIB, nm), echo=FALSE)
@@ -22,6 +22,8 @@ for(nm in .RFILES) source(file.path(.LIB, nm), echo=FALSE)
 # Link to data file
 .DAT		<- "data/"
 .DFILES		<- list.files(.DAT,pattern="\\.[Dd]at")
+.CDF        <- NULL
+
 
 dfile <- "data/NamibianHake.dat"
 mData <- read.table(dfile,header=TRUE)

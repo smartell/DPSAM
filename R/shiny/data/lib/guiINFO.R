@@ -7,6 +7,12 @@ guiINFO <- function()
           "Navigation",
           tabPanel("About",
             includeMarkdown("www/About.md")
+          ),
+          tabPanel("Input",
+            includeMarkdown("www/Input.md")
+          ),
+          tabPanel("SRA",
+            includeMarkdown("www/StockReductionAnalysis.md")
           )
   #         tabPanel("Equilibrium",
   #           # includeMarkdown("www/Equilibrium.md")
