@@ -111,7 +111,7 @@ using namespace Rcpp;
 
     
     int i;
-    for (i = 0; i < m_nage; ++i)
+    for (i = 0; i < m_ageSize; ++i)
     {
       la[i] = linf*(1.0-exp(-k*m_age[i]));
       wa[i] = a * pow(la[i],b);
@@ -167,7 +167,7 @@ using namespace Rcpp;
     double dphiq_df;
 
     int i;
-    for (i = 0; i < m_nage; ++i)
+    for (i = 0; i < m_ageSize; ++i)
     {
       za[i] = m + fmsy * va[i];
       sa[i] = exp(-za[i]);
@@ -261,14 +261,18 @@ using namespace Rcpp;
   void print(void);
 
   // Getters
-  NumericVector getBt() {return m_bt;}
+  NumericVector getBt()         {return m_bt; }
+  
+
  };
  
  void sra::runModel()
  {
-    Rcpp::Rcout<<"runModel"<<std::endl;
+    Rcpp::Rcout<<"runModel "<<std::endl;
     initializeModel();
+    COUT(so);
     ageStructuredModel();
+    print();
  }
 
 void sra::print()
@@ -405,17 +409,17 @@ void sra::print()
           N(i+1,j) += N(i,j) * sa;
         }
 
-        // Rcpp::Rcout<<j<<" age "<<m_age[j]<<"\t"<<za<<" "<<N(i,j)<<std::endl;
+        Rcpp::Rcout<<j<<" age "<<m_age[j]<<"\t"<<za<<" "<<N(i,j)<<std::endl;
       }  // end j
       // Rcpp::Rcout<<m_year[i]<<"\t"<<tbt[i]<<std::endl;
 
     } // end i
 
 
-
     m_bt = sbt;
 
-    // Rcpp::Rcout<<N(0,m_nage-1)<<"\t"<<N(1,m_nage-2)<<std::endl;
+
+    Rcpp::Rcout<<N(0,m_nage-1)<<"\t"<<N(1,m_nage-2)<<std::endl;
   
  }
 
@@ -434,7 +438,7 @@ void sra::print()
 
     class_<sra>("sra")
       .constructor<stock>()
-      .property( "m_bt", &sra::getBt, "Spawning stock biomass")
+      .property( "bt", &sra::getBt, "Spawning stock biomass")
       .method( "ageStructuredModel", &sra::ageStructuredModel )
       .method( "initializeModel", &sra::initializeModel )
       .method( "runModel", &sra::runModel )
