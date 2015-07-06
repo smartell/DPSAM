@@ -285,14 +285,6 @@ using namespace Rcpp;
     initializeModel();
     ageStructuredModel();
 
-    // COUT(m_year.size());
-    // COUT(m_bt.size());
-
-    // DataFrame df = DataFrame::create(
-    //     Named("Year")                 = m_year,
-    //     Named("Spawning.Biomass")     = m_bt
-    //     );
-
     List ldf = List::create(
         Named("Year")             = m_year,
         Named("Spawning.Biomass") = m_bt
