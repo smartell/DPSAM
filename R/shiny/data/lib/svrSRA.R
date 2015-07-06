@@ -50,7 +50,7 @@ sraModel <- function(mdata)
 
 	mod <- new(sra,mdata)
 	df  <- mod$runModel();
-
+	df  <- data.frame(Year = df[["Year"]],Spawning.Biomass = df[["Spawning.Biomass"]])
 
 
 	return(df)
@@ -71,33 +71,26 @@ sraModelPosterior <- function(mdata)
 	# P  <- reactive(do.call(getPriorSamples,mdata))
 	prior.df <- getPriorSamples(mdata)
 	
-
+	print(head(prior.df))
 	# run model once
 	fn <- function(prior)
 	{
+		# print(prior)
 		mdata$cmsy <- prior[["cmsy"]]
 		mdata$fmsy <- prior[["fmsy"]]
 		mdata$m    <- prior[["natm"]]
 		
 		mod <- new(sra,mdata);
 		df  <- mod$runModel();
-
-		return(df$Spawning.Biomass)
+		
+		return(df)
 		
 	}
-	bdf <- apply(prior.df,1,FUN="fn",prior=prior.df)
-	print(head(bdf))
-	# p  <- ggplot(df,aes(x=Year,y=Spawning.Biomass)) + geom_line()
-	# print(p + .THEME)
+
+	# create the list of data frames
+	lodf <- apply(prior.df,1,FUN="fn")
 	
-	# run sra model numerous times
-	# n <- dim(prior.df)[1]
-	# fn <- function(prior)
-	# {
-	# 	ell <- apply(X=prior,MARGIN=1,FUN="sraModelPosterior",mdata=mdata)
-	# 	return(ell)
-	# }
-	return(df)
+	return(lodf)
 }
 
 # -- ———————————————————————————————————————————————————————————————————————————————— -- #
@@ -122,7 +115,8 @@ sraModelPrior <- function(mdata)
 		mdata$cmsy <- xgrid[i,2]
 		mdata$m    <- xgrid[i,3]
 		mod <- new(sra,mdata)
-		df  <- mod$runModel();
+		ml  <- mod$runModel();
+		df  <- data.frame(Year=ml[["Year"]],Spawning.Biomass=ml[["Spawning.Biomass"]])
 		df$i<- i
 		cdf <- rbind(cdf,df)
 	}
@@ -158,23 +152,13 @@ plotSSBposterior <- function(input)
 {
 	mdata <- getData(input)
 	
-	M  <- reactive(do.call(sraModelPosterior,mdata))
-	df <- M();
-	
+	M    <- reactive(do.call(sraModelPosterior,mdata))
+	lodf <- M();
+
+	bdf  <- ldply(lodf,function(x) x[["Spawning.Biomass"]])
+	matplot(t(bdf),type="l")
 	
 
-	# df <- fn(prior.df)
-	# print(df)
-
-	# ell <- apply(X=prior.df,MARGIN=1,FUN="runCppModel",L=A)
-	# Q <- reactive(do.call(sraModelPosterior,list(mdata,prior.df[1,])))
-	# print("pre-run")
-	# Q()
-	# mu <- mean(lu)
-	# sd <- get.sd(lu)
-	# f_prior <- rnorm(100,mu,sd)
-	# print(f_prior)
-	# p <- plotSSBprior(input)
 }
 
 

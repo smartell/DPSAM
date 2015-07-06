@@ -263,7 +263,7 @@ using namespace Rcpp;
  	double getFt(double &ct, double &m, NumericVector &va,
                NumericVector &wa, NumericVector& na);
  	
-  DataFrame runModel(void);
+  List runModel(void);
   void print(void);
 
   // Getters
@@ -280,7 +280,7 @@ using namespace Rcpp;
  //    // print();
  // }
 
- DataFrame sra::runModel()
+ List sra::runModel()
  {
     initializeModel();
     ageStructuredModel();
@@ -288,12 +288,17 @@ using namespace Rcpp;
     // COUT(m_year.size());
     // COUT(m_bt.size());
 
-    DataFrame df = DataFrame::create(
-        Named("Year")                 = m_year,
-        Named("Spawning.Biomass")     = m_bt
-        );
+    // DataFrame df = DataFrame::create(
+    //     Named("Year")                 = m_year,
+    //     Named("Spawning.Biomass")     = m_bt
+    //     );
 
-    return(df);
+    List ldf = List::create(
+        Named("Year")             = m_year,
+        Named("Spawning.Biomass") = m_bt
+    );
+
+    return(ldf);
  }
 
 void sra::print()
