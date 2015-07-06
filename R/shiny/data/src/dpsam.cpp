@@ -285,8 +285,8 @@ using namespace Rcpp;
     initializeModel();
     ageStructuredModel();
 
-    COUT(m_year.size());
-    COUT(m_bt.size());
+    // COUT(m_year.size());
+    // COUT(m_bt.size());
 
     DataFrame df = DataFrame::create(
         Named("Year")                 = m_year,
