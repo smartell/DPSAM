@@ -21,16 +21,27 @@ guiSRA <- function()
    			            min=0,max=1.0,value=c(0.1,0.3),step=0.01),
         
         wellPanel(
-          actionButton("actionRunSRA", label = "Importance Sample",icon = icon("play"))
+          fluidRow(
+            column(6,
+              actionButton("actionRunSRA", 
+                           label = "Run SIR",
+                           icon = icon("play"))
+            ),
+            column(6,
+              numericInput("nI_nSIR",
+                         label=h6("N samples"),
+                         value=100,min=100,max=1e6,step=100)
+            )
+          )
         )     
    		),
     
     	mainPanel(
-        tabsetPanel(type="pills",id="stockpar",
-          tabPanel("Priors",
+        tabsetPanel(type="pills",id="tabPlots",
+          tabPanel(title="Priors",
             plotOutput("plotSRA",height = "550px")
           ),
-          tabPanel("Posteriors",
+          tabPanel(title="Posteriors",
             plotOutput("plotPosterior",height = "550px")
           )
         )

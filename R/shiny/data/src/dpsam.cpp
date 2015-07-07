@@ -65,7 +65,6 @@ using namespace Rcpp;
      {
      	calcAgeSchedule();
       calcSteepnessBo();
-     	
      	// Rcpp::Rcout<<"phie = "<<phie<<std::endl;
      }
 
@@ -245,6 +244,7 @@ using namespace Rcpp;
 
   double so;
   double beta;
+  double m_objFun;
 
   IntegerVector m_year;
   NumericVector m_chat;
@@ -252,6 +252,7 @@ using namespace Rcpp;
 
   NumericMatrix m_N;
   NumericVector m_bt;
+  NumericVector m_vt;
  	
  public:
  	sra(const stock &c_stock)
@@ -260,14 +261,18 @@ using namespace Rcpp;
   // Methods
   void initializeModel(void);
  	void ageStructuredModel(void);
+  void calcObjectiveFunc(void);
+
  	double getFt(double &ct, double &m, NumericVector &va,
                NumericVector &wa, NumericVector& na);
  	
   List runModel(void);
+  List samplePosterior(NumericMatrix priorSamples);
   void print(void);
 
   // Getters
-  NumericVector getBt()         {return m_bt; }
+  NumericVector getBt()         {return m_bt;    }
+  double get_objFun()           {return m_objFun;}
   
 
  };
@@ -284,14 +289,23 @@ using namespace Rcpp;
  {
     initializeModel();
     ageStructuredModel();
+    calcObjectiveFunc();
 
     List ldf = List::create(
+        Named("objFun")           = m_objFun,
         Named("Year")             = m_year,
         Named("Spawning.Biomass") = m_bt
     );
 
     return(ldf);
  }
+
+ List sra::samplePosterior(NumericMatrix priorSamples)
+ {
+    int n = priorSamples.nrow();
+    calcAgeSchedule();
+ }
+
 
 void sra::print()
 {
@@ -372,6 +386,7 @@ void sra::print()
     NumericVector na(m_ageSize-1);
     NumericVector ft(m_yearSize-1);
     NumericVector tbt(m_yearSize); // total biomass
+    NumericVector vbt(m_yearSize); // vulnerable biomass
     NumericVector sbt(m_yearSize); // spawning biomass
 
     NumericMatrix N(m_yearSize,m_ageSize-1);
@@ -397,6 +412,7 @@ void sra::print()
       {
         sbt[i] += N(i,j) * m_fa[j];  
         tbt[i] += N(i,j) * m_wa[j];
+        vbt[i] += N(i,j) * m_va[j] * m_wa[j];
         na[j]   = N(i,j);
         // Rcpp::Rcout<<na[j]<<" ";
       }
@@ -435,12 +451,44 @@ void sra::print()
 
 
     m_bt = sbt;
+    m_vt = vbt;
 
 
     // Rcpp::Rcout<<N(0,m_nage-1)<<"\t"<<N(1,m_nage-2)<<std::endl;
   
  }
+ void sra::calcObjectiveFunc(void)
+ {
+    m_objFun = 0;
 
+    // if biomass is extinct then set a very large negative log likelihood and exit.
+    if( min(m_bt) <= 0 )
+    {
+      m_objFun = 1.e7;
+      return;
+    } 
+
+    // if biomass is extant, then calculate objective function given the data types.
+    NumericVector nloglike(1);
+    
+    // likelihood of CPUE data if exists
+    int n = 0;
+    NumericVector zt(m_yearSize-1);
+    for (int i = 0; i < m_yearSize; ++i)
+    {
+      if(m_cpue[i] > 0 && m_vt[i] > 0)
+      {
+        n ++;
+        zt[i] = log(m_cpue[i]) - log(m_vt[i]);
+      }
+    }
+    double zbar = mean(zt);
+    NumericVector epsilon = zt - zbar;
+
+    m_objFun -= sum(dnorm(epsilon,0,sd(epsilon),TRUE));
+
+    // Rcpp::Rcout<<exp(m_objFun)<<std::endl;
+ }
 
 
  RCPP_MODULE(sra_module) 
@@ -458,10 +506,11 @@ void sra::print()
     class_<sra>("sra")
       .constructor<stock>()
       .property( "bt", &sra::getBt, "Spawning stock biomass")
+      .property( "objFun", &sra::get_objFun, "Objective function value")
       .method( "ageStructuredModel", &sra::ageStructuredModel )
       .method( "initializeModel", &sra::initializeModel )
       .method( "runModel", &sra::runModel )
-      // .method( "runModel", &sra::runModel )
+      .method( "samplePosterior", &sra::samplePosterior )
       .method( "print", &sra::print )
 	   ;
  }

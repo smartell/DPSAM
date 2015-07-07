@@ -8,6 +8,9 @@ shinyServer(function(input, output, session)
 	})
 
 
+	# 
+	# STOCK REDUCTION ANALYSIS
+	# 
 	output$plotSRA <- renderPlot({
 		plotSSBprior(input)
     })
@@ -21,5 +24,20 @@ shinyServer(function(input, output, session)
   	output$plotPosterior <- renderPlot({
   		runSRA()
   	})
+
+
+  	observeEvent(input$actionRunSRA,{
+  		updateTabsetPanel(session,inputId="tabPlots",selected="Posteriors")
+  	})
+  	observeEvent(input$sldr_fmsy,{
+  		updateTabsetPanel(session,inputId="tabPlots",selected="Priors")
+  	})
+  	observeEvent(input$sldr_cmsy,{
+  		updateTabsetPanel(session,inputId="tabPlots",selected="Priors")
+  	})
+  	observeEvent(input$sldr_natm,{
+  		updateTabsetPanel(session,inputId="tabPlots",selected="Priors")
+  	})
+
 
 })

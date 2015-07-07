@@ -21,18 +21,22 @@ library(microbenchmark)
 # STOCK CLASS
 stockId 		<- new.env()
 stockId$age 	<- 1:15
+
 # growth parameters
 stockId$linf	<- 111
 stockId$k 		<- 0.23
 stockId$winf  	<- 5.0
 stockId$b     	<- 3.0
 stockId$a 		<- stockId$winf/(stockId$linf^stockId$b)
+
 # maturity parameters
 stockId$ah 		<- log(3)/stockId$k
 stockId$gh		<- 0.5
+
 # selectivity parameters
 stockId$sel50 	<- 3.0
 stockId$sel95 	<- 5.0
+
 # population parameters
 stockId$m  		<- 0.20
 stockId$fmsy 	<- 0.15

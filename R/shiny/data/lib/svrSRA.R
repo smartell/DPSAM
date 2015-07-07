@@ -35,7 +35,7 @@ getData <- function(input)
 	out$f_range <- input$sldr_fmsy
 	out$c_range <- input$sldr_cmsy
 	out$m_range <- input$sldr_natm
-
+	out$n_sir   <- input$nI_nSIR
 	# print(out)
 	return(list(out))
 
@@ -156,7 +156,17 @@ plotSSBposterior <- function(input)
 	lodf <- M();
 
 	bdf  <- ldply(lodf,function(x) x[["Spawning.Biomass"]])
-	matplot(t(bdf),type="l")
+	nll  <- ldply(lodf,function(x) x[["objFun"]])
+	
+	t1   <- exp(unlist(nll))
+	wts  <- t1/sum(t1,na.rm=TRUE)
+	wts[wts=="NaN"] = 0
+	
+	n    <- as.double(input[["nI_nSIR"]])
+	idx  <- sample(1:n,n,TRUE,prob=wts)
+
+	
+	matplot(t(bdf[idx,]),type="l")
 	
 
 }
@@ -173,7 +183,8 @@ get.sd <- function(lu,ci=0.95)
 
 getPriorSamples <- function(mdata)
 {
-	n   <- 100
+	print(mdata)
+	n   <- mdata$n_sir
 	df  <- NULL
 	obj <- c("f_range","c_range","m_range")
 	for( i in obj )

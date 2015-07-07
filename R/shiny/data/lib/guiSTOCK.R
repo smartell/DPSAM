@@ -24,7 +24,8 @@ renderDataInput <- function()
 		fluidRow(
 		column(4,
 			h5("Data input"),
-			apply(dataDF[1:7,],1,function(p) {numericInput(p[1],h6(p[2]),p[3],p[4],p[5],p[6])})
+			apply(dataDF[1:7,],1,function(p) 
+			      {numericInput(p[1],h6(p[2]),p[3],p[4],p[5],p[6])})
 		),
 		column(8,
 		    h5("Fisheries data"),
