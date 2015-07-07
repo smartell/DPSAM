@@ -1,6 +1,13 @@
 # DPSAM
 Data Poor Stock Assessment Methods
 
+**Wan't to try**
+
+Execute the following code in R
+
+	runGitHub("DPSAM","smartell",ref="develop",subdir="/R/shiny/")
+
+
 ## Table of contents
 - [Structured Workplan & Timeline](#structured-workplan)
 
