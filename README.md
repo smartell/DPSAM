@@ -1,6 +1,9 @@
 # DPSAM
 Data Poor Stock Assessment Methods
 
+You can run the current developer version by running the following command in R
+  runGitHub("DPSAM","smartell",ref="develop",subdir="/R/shiny/")
+
 ## Table of contents
 - [Structured Workplan & Timeline](#structured-workplan)
 
