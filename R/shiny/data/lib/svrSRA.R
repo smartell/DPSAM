@@ -71,7 +71,7 @@ sraModelPosterior <- function(mdata)
 	# P  <- reactive(do.call(getPriorSamples,mdata))
 	prior.df <- getPriorSamples(mdata)
 	
-	print(head(prior.df))
+	print(tail(prior.df))
 	# run model once
 	fn <- function(prior)
 	{
@@ -82,6 +82,7 @@ sraModelPosterior <- function(mdata)
 		
 		mod <- new(sra,mdata);
 		df  <- mod$runModel();
+
 		
 		return(df)
 		
@@ -89,7 +90,14 @@ sraModelPosterior <- function(mdata)
 
 	# create the list of data frames
 	lodf <- apply(prior.df,1,FUN="fn")
-	
+
+
+	# test an alternate method
+	on.exit(rm(mod2))
+	mod2  <- new(sra,mdata);
+	lodf2 <- mod2$samplePosterior(as.matrix(prior.df));
+
+	print(lodf2)
 	return(lodf)
 }
 
@@ -173,7 +181,7 @@ plotSSBposterior <- function(input)
 
 
 # -- ———————————————————————————————————————————————————————————————————————————————— -- #
-get.sd <- function(lu,ci=0.95)
+get.sd <- function(lu,ci=0.99)
 {
 	mu = mean(lu)
 	qt = c(0.5*(1-ci),1+0.5*(ci-1))

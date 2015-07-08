@@ -1,12 +1,12 @@
-#include <Rcpp.h>
-#include <Rcpp/Benchmark/Timer.h>
-
+# include <Rcpp.h>
+# include <Rcpp/Benchmark/Timer.h>
 
 #undef COUT
 #define COUT(object) Rcpp::Rcout << #object "\n" << object << std::endl;
 
 
 using namespace Rcpp; 
+
 // [[Rcpp::plugins(cpp11)]]
  
 
@@ -63,6 +63,7 @@ using namespace Rcpp;
      stock(List _stock)
      :m_stock(_stock) 
      {
+      initVariables();
      	calcAgeSchedule();
       calcSteepnessBo();
      	// Rcpp::Rcout<<"phie = "<<phie<<std::endl;
@@ -75,12 +76,13 @@ using namespace Rcpp;
     double get_sb100()       { return m_sb100; }
     void   set_sb100(double _sb100) { m_sb100 = _sb100; }
 
+    void initVariables();
     void calcAgeSchedule();
     void calcSteepnessBo();
      
  };
 
- void stock::calcAgeSchedule()
+ void stock::initVariables()
  {
  	  m 	  = as<double>(m_stock["m"]);
  	  linf  = as<double>(m_stock["linf"]);
@@ -100,6 +102,11 @@ using namespace Rcpp;
     m_sage  = min(m_age);
     m_nage  = max(m_age);
     m_ageSize = m_age.size();
+  
+ }
+
+ void stock::calcAgeSchedule()
+ {
 
     // Rcpp::Rcout<<"size of age = "<<m_ageSize<<std::endl;
     NumericVector la( m_ageSize-1 );
@@ -303,7 +310,36 @@ using namespace Rcpp;
  List sra::samplePosterior(NumericMatrix priorSamples)
  {
     int n = priorSamples.nrow();
-    calcAgeSchedule();
+
+    // Rcpp::Rcout<<"fmsy pre_ "<<fmsy<<std::endl;
+    // NumericMatrix df_bt(m_yearSize,n);
+    // arma::mat mat = arma::zeros(m_yearSize,n);
+
+    Rcpp::DataFrame df_bt;
+    for (int i = 0; i < n; ++i)
+    {
+      fmsy = priorSamples(i,0);
+      msy  = priorSamples(i,1);
+      m    = priorSamples(i,2);
+      COUT(fmsy);
+      
+      stock::calcAgeSchedule();
+      stock::calcSteepnessBo();
+      sra::initializeModel();
+      sra::ageStructuredModel();
+      sra::calcObjectiveFunc();
+
+      
+      df_bt.push_back(m_bt);
+    }
+
+    List ldf = List::create(
+        Named("objFun")           = m_objFun,
+        Named("Year")             = m_year,
+        Named("Spawning.Biomass") = df_bt
+    );
+    // Rcpp::Rcout<<wrap(df_bt)<<std::endl;
+    return(ldf);
  }
 
 
@@ -452,7 +488,7 @@ void sra::print()
 
     m_bt = sbt;
     m_vt = vbt;
-
+    Rcpp::Rcout<<m_bt(0)<<std::endl;
 
     // Rcpp::Rcout<<N(0,m_nage-1)<<"\t"<<N(1,m_nage-2)<<std::endl;
   
